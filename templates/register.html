@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Login System{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .password-strength {
+        margin-top: 0.5rem;
+        height: 4px;
+        border-radius: 2px;
+        background-color: #e0e0e0;
+        overflow: hidden;
+    }
+
+    .password-strength-bar {
+        height: 100%;
+        width: 0;
+        background-color: #dc3545;
+        transition: width 0.3s, background-color 0.3s;
+    }
+
+    .password-strength-text {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Register</h2>
+    <form method="POST" action="{{ url_for('register') }}" id="registerForm">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required placeholder="Choose a username" 
+                   minlength="3" maxlength="50">
+            <small style="color: #666; display: block; margin-top: 0.25rem;">3-50 characters, letters, numbers, and underscore only</small>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required placeholder="Enter your email" maxlength="120">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required placeholder="Create a strong password" 
+                   minlength="8" maxlength="128" oninput="checkPasswordStrength()">
+            <div class="password-strength">
+                <div class="password-strength-bar" id="strengthBar"></div>
+            </div>
+            <div class="password-strength-text" id="strengthText"></div>
+        </div>
+
+        <div class="password-requirements">
+            <h4>Password Requirements:</h4>
+            <div class="requirement">
+                <span class="requirement-check" id="check-length">✗</span>
+                <span>At least 8 characters</span>
+            </div>
+            <div class="requirement">
+                <span class="requirement-check" id="check-uppercase">✗</span>
+                <span>At least one uppercase letter (A-Z)</span>
+            </div>
+            <div class="requirement">
+                <span class="requirement-check" id="check-lowercase">✗</span>
+                <span>At least one lowercase letter (a-z)</span>
+            </div>
+            <div class="requirement">
+                <span class="requirement-check" id="check-number">✗</span>
+                <span>At least one number (0-9)</span>
+            </div>
+            <div class="requirement">
+                <span class="requirement-check" id="check-special">✗</span>
+                <span>At least one special character (!@#$%^&* etc.)</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" required 
+                   placeholder="Confirm your password" minlength="8" maxlength="128" oninput="checkPasswordMatch()">
+            <small id="passwordMatchText" style="display: none; color: #28a745; margin-top: 0.25rem; display: block;">✓ Passwords match</small>
+        </div>
+
+        <button type="submit" id="submitBtn" disabled>Register</button>
+
+        <div class="form-footer">
+            Already have an account? <a href="{{ url_for('login') }}">Login here</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    function checkPasswordStrength() {
+        const password = document.getElementById('password').value;
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+        let strength = 0;
+
+        // Check length
+        const hasLength = password.length >= 8;
+        document.getElementById('check-length').className = 'requirement-check ' + (hasLength ? 'valid' : 'invalid');
+        if (hasLength) strength++;
+
+        // Check uppercase
+        const hasUppercase = /[A-Z]/.test(password);
+        document.getElementById('check-uppercase').className = 'requirement-check ' + (hasUppercase ? 'valid' : 'invalid');
+        if (hasUppercase) strength++;
+
+        // Check lowercase
+        const hasLowercase = /[a-z]/.test(password);
+        document.getElementById('check-lowercase').className = 'requirement-check ' + (hasLowercase ? 'valid' : 'invalid');
+        if (hasLowercase) strength++;
+
+        // Check number
+        const hasNumber = /\d/.test(password);
+        document.getElementById('check-number').className = 'requirement-check ' + (hasNumber ? 'valid' : 'invalid');
+        if (hasNumber) strength++;
+
+        // Check special character
+        const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};:'"",.<>?\/\\|`~]/.test(password);
+        document.getElementById('check-special').className = 'requirement-check ' + (hasSpecial ? 'valid' : 'invalid');
+        if (hasSpecial) strength++;
+
+        // Update strength bar
+        const percentage = (strength / 5) * 100;
+        strengthBar.style.width = percentage + '%';
+
+        if (strength <= 2) {
+            strengthBar.style.backgroundColor = '#dc3545';
+            strengthText.textContent = 'Weak';
+            strengthText.style.color = '#dc3545';
+        } else if (strength <= 3) {
+            strengthBar.style.backgroundColor = '#ffc107';
+            strengthText.textContent = 'Fair';
+            strengthText.style.color = '#ffc107';
+        } else if (strength <= 4) {
+            strengthBar.style.backgroundColor = '#28a745';
+            strengthText.textContent = 'Good';
+            strengthText.style.color = '#28a745';
+        } else {
+            strengthBar.style.backgroundColor = '#007bff';
+            strengthText.textContent = 'Strong';
+            strengthText.style.color = '#007bff';
+        }
+
+        checkPasswordMatch();
+        updateSubmitButton();
+    }
+
+    function checkPasswordMatch() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const matchText = document.getElementById('passwordMatchText');
+
+        if (confirmPassword && password === confirmPassword) {
+            matchText.style.color = '#28a745';
+            matchText.textContent = '✓ Passwords match';
+            updateSubmitButton();
+        } else if (confirmPassword && password !== confirmPassword) {
+            matchText.style.color = '#dc3545';
+            matchText.textContent = '✗ Passwords do not match';
+            updateSubmitButton();
+        }
+    }
+
+    function updateSubmitButton() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+
+        // Check all requirements
+        const hasLength = password.length >= 8;
+        const hasUppercase = /[A-Z]/.test(password);
+        const hasLowercase = /[a-z]/.test(password);
+        const hasNumber = /\d/.test(password);
+        const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};:'"",.<>?\/\\|`~]/.test(password);
+        const passwordsMatch = password === confirmPassword && confirmPassword !== '';
+        const validUsername = username.length >= 3;
+        const validEmail = email.includes('@') && email.includes('.');
+
+        const submitBtn = document.getElementById('submitBtn');
+        const allValid = hasLength && hasUppercase && hasLowercase && hasNumber && 
+                        hasSpecial && passwordsMatch && validUsername && validEmail;
+
+        submitBtn.disabled = !allValid;
+        if (allValid) {
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        } else {
+            submitBtn.style.opacity = '0.6';
+            submitBtn.style.cursor = 'not-allowed';
+        }
+    }
+
+    // Initial check
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('username').addEventListener('input', updateSubmitButton);
+        document.getElementById('email').addEventListener('input', updateSubmitButton);
+    });
+</script>
+{% endblock %}

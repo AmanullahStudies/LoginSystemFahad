@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Page Not Found{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center;">
+    <h2 style="font-size: 3rem; color: #dc3545;">404</h2>
+    <p style="font-size: 1.2rem; color: #666; margin-bottom: 1.5rem;">Page Not Found</p>
+    <p style="color: #999; margin-bottom: 1.5rem;">The page you're looking for doesn't exist.</p>
+    <a href="{{ url_for('index') }}" style="display: inline-block; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 5px; transition: all 0.3s;">
+        Go Home
+    </a>
+</div>
+{% endblock %}
